@@ -7,11 +7,12 @@
 
 int main(void) {
 
-    Application app;
-    if(!app.CreateApp("GUI Project 2", 800, 600)) {
+    if(!Application::CreateAppInstance("GUI Project 2", 800, 600)) {
         std::cerr << "Unable to start project." << std::endl;
         return -1;
     }
+
+    Application& app = Application::GetAppInstance();
 
     while (app.IsWindowOpen()) {
         app.BeginFrame();
