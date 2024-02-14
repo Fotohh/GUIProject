@@ -3,6 +3,7 @@ GPP = g++
 OBJ = out/main.o 
 OBJ += out/imgui/imgui_demo.o out/imgui/imgui_draw.o out/imgui/imgui_tables.o out/imgui/imgui_widgets.o out/imgui/imgui.o
 OBJ += out/glad/glad.o
+OBJ += out/Application.o
 
 INCLUDES = -I submodules/imgui -I submodules/glfw -I submodules
 LIBS = -L submodules/glfw -lglfw3 -lgdi32
