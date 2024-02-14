@@ -9,6 +9,15 @@ struct {
 	GLFWwindow* window_;
 } Core;
 
+Application Application::instance_;
+
+bool Application::CreateAppInstance(const std::string& title, uint32_t width, uint32_t height) {
+	return instance_.CreateApp(title, width, height);
+}
+
+Application& Application::GetAppInstance() {
+	return instance_;
+}
 
 bool Application::CreateApp(const std::string& title, uint32_t width, uint32_t height) {
 	title_ = title;
