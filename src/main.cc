@@ -1,24 +1,29 @@
 #include <iostream>
 
 #include "Application.h"
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "Render.h"
 
 int main(void) {
 
-    if(!Application::CreateAppInstance("GUI Project 2", 800, 600)) {
-        std::cerr << "Unable to start project." << std::endl;
-        return -1;
-    }
+	if(!Application::CreateAppInstance("GUI Project 2", 800, 800)) {
+  	std::cerr << "Unable to start project." << std::endl;
+    return -1;
+  }
 
-    Application& app = Application::GetAppInstance();
+  Application& app = Application::GetAppInstance();
+  Render& renderer = Render::GetRenderInstance();
 
-    while (app.IsWindowOpen()) {
-        app.BeginFrame();
-        glClearColor(0.6, 0.5, 0.5, 1.0);
-        app.EndFrame();
-    }
+	while (app.IsWindowOpen()) {
+  	app.BeginFrame();
+  	renderer.ClearColor(JAZZ);
 
-    return 0;
+		renderer.GUI_BeginFrame();
+
+		ImGui::ShowDemoWindow();
+        
+    renderer.GUI_EndFrame();
+    app.EndFrame();
+	}
+
+  return 0;
 }

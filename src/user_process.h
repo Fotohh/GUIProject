@@ -1,9 +1,20 @@
 #pragma once
+#include <iostream>
 
-struct User {
-    char32_t* uuid;
+class UserProcess {
 
-    char32_t getUserID();
+    UserProcess();
+    
+    ~UserProcess();
 
-    //do more stuff here
+private:
+    unsigned char UUID;
+
+public:
+    std::string username;
+    
+    const bool getUserStatus();
+    
+    
+
 };

@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include "Render.h"
+
 struct {
 	GLFWwindow* window_;
 } Core;
@@ -51,6 +53,8 @@ bool Application::CreateApp(const std::string& title, uint32_t width, uint32_t h
   }
 
   glViewport(0, 0, width_, height_);
+
+	Render::InitGUI(Core.window_);
 
 	return true;
 }
