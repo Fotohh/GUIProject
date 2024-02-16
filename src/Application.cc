@@ -34,7 +34,7 @@ bool Application::CreateApp(const std::string& title, uint32_t width, uint32_t h
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
   Core.window_ = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, nullptr);
 
