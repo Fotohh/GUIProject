@@ -32,11 +32,4 @@ run:
 	out/$(APP_TITLE).exe
 
 clean:
-	cd out
-	del *.o *.exe
-	cd out/glfw
-	del *.o
-	cd ../
-	cd out/glad
-	del *.o
-
+	del out\**

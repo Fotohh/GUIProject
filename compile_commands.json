@@ -1,0 +1,173 @@
+[
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "src/main.cc",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/main.o"
+  ],
+  "file": "src/main.cc"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "submodules/imgui/imgui_demo.cpp",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/imgui/imgui_demo.o"
+  ],
+  "file": "submodules/imgui/imgui_demo.cpp"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "submodules/imgui/imgui_draw.cpp",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/imgui/imgui_draw.o"
+  ],
+  "file": "submodules/imgui/imgui_draw.cpp"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "submodules/imgui/imgui_tables.cpp",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/imgui/imgui_tables.o"
+  ],
+  "file": "submodules/imgui/imgui_tables.cpp"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "submodules/imgui/imgui_widgets.cpp",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/imgui/imgui_widgets.o"
+  ],
+  "file": "submodules/imgui/imgui_widgets.cpp"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "submodules/imgui/imgui.cpp",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/imgui/imgui.o"
+  ],
+  "file": "submodules/imgui/imgui.cpp"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "src/glad.c",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/glad/glad.o"
+  ],
+  "file": "src/glad.c"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "src/Application.cc",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/Application.o"
+  ],
+  "file": "src/Application.cc"
+ },
+ {
+  "directory": "C:\\Users\\Senor\\Documents\\00_Projects\\05_CPP\\00_WIP\\GUIProject",
+  "arguments": [
+   "g++",
+   "-c",
+   "src/Render.cc",
+   "-I",
+   "submodules/imgui",
+   "-I",
+   "submodules/glfw",
+   "-I",
+   "submodules/imgui/backends",
+   "-I",
+   "submodules",
+   "-o",
+   "out/Render.o"
+  ],
+  "file": "src/Render.cc"
+ }
+]
