@@ -1,5 +1,7 @@
 
-.vscode/c_cpp_properties.json
-.vscode/settings.json
-.vscode/settings.json
-.vscode/settings.json
+#out files
+out/
+
+
+#vscode proj files
+.vscode/

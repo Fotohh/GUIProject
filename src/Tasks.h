@@ -9,7 +9,7 @@
 
 struct Task {
     std::string taskName;
-    long taskID;
+    int taskID;
     uint64_t timestamp;
     bool hasTimestamp;
 };
