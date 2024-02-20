@@ -5,3 +5,5 @@ out/
 
 #vscode proj files
 .vscode/
+*.o
+.vscode/settings.json
