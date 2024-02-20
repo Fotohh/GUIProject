@@ -6,6 +6,7 @@ OBJ += out/imgui/imgui_impl_glfw.o out/imgui/imgui_impl_opengl3.o
 OBJ += out/glad/glad.o
 OBJ += out/Application.o
 OBJ += out/Render.o
+OBJ += out/Tasks.o
 
 INCLUDES = -I submodules/imgui -I submodules/glfw -I submodules/imgui/backends -I submodules
 LIBS = -L submodules/glfw -lglfw3 -lgdi32

@@ -19,14 +19,14 @@ struct Task {
 class Tasks{
 
 private:
-    static std::list<Task> taskList;
+    static std::vector<Task> taskList;
 
 public:
-    Task createTask(std::string taskName, bool timestamp);
-    bool deleteTask(int taskID);
-    Task getTask(int taskID);
-    static std::list<Task> getTasks();
-    bool addTask(Task task);
+    int createTask(std::string taskName, bool timestamp);
+    void deleteTask(int taskID);
+    Task* getTask(int taskID);
+    static std::vector<Task>& getTasks();
+    void addTask(Task task);
 };
 
 #endif

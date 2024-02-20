@@ -7,29 +7,36 @@
 
 
 
-std::list<Task> Tasks::taskList;
+std::vector<Task> Tasks::taskList;
 
-Task Tasks::createTask(std::string taskName, bool hasTimestamp) {
+int Tasks::createTask(std::string taskName, bool hasTimestamp) {
     using namespace std::chrono;
     u_int64 timestamp = 0;
     if(hasTimestamp) {
         timestamp = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     }
-    return Task{taskName, std::rand(), timestamp, hasTimestamp};
+    addTask(Task{taskName, std::rand(), timestamp, hasTimestamp});
+    return taskList.size() -1;
 }
 
-bool Tasks::deleteTask(int taskID) {
-
+void Tasks::deleteTask(int taskID) {
+    taskList.erase(taskList.begin() + taskID);
 }
 
-Task Tasks::getTask(int taskID) {
-
+Task* Tasks::getTask(int taskID) {
+    for(Task &task : taskList){
+        if(task.timestamp == taskID){
+            return &task;
+        }
+        
+    }
+    return nullptr;
 } 
 
-std::list<Task> Tasks::getTasks() {
+std::vector<Task>& Tasks::getTasks() {
     return taskList;
 }
 
-bool Tasks::addTask(Task task) {
-
+void Tasks::addTask(Task task) {
+    taskList.push_back(task);
 }
