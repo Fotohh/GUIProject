@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <cstdint>
-#include <list>
+#include <vector>
 
 #define ExampleTask {"Example", "1", "0", false}
 
