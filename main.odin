@@ -4,21 +4,6 @@ import "core:fmt"
 import "core:math"
 import rl "vendor:raylib"
 
-add_pixels :: proc(pixels: ^[dynamic][2]i32) {
-  mouse_pos := rl.GetMousePosition()
-
-  x_min := cast(i32)mouse_pos.x - 100
-  y_min := cast(i32)mouse_pos.y - 100
-
-  for x in 0..=100 {
-    for y in 0..=100 {
-      append(pixels, [2]i32 { x_min + cast(i32)x, y_min + cast(i32)y })
-    }
-  }
-}
-
-
-
 main :: proc() { 
   config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE }
   rl.SetConfigFlags(config_flags)
