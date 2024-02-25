@@ -77,6 +77,7 @@ main :: proc() {
   music_queue : m.Queue
   defer m.queue_clear(&music_queue)
 
+  pause_button_text : cstring = "Pause"
 
   for !rl.WindowShouldClose() { 
     screen_center_w = cast(i32)rl.GetScreenWidth() / 2
@@ -126,7 +127,7 @@ main :: proc() {
 
     rl.DrawFPS(0, 0)
 
+    m.pause_button(&music_queue)
   }
-
   rl.CloseWindow()
 }

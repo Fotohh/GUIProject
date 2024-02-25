@@ -1,13 +1,14 @@
-package MusicManager;
+package music
 
 import rl "vendor:raylib"
 import "core:fmt"
 import "core:strings"
 
 Queue :: struct{
-  pos : u32,
+  pos : u32, //1 more than current_music
   current_music : u32,
-  music : [dynamic]rl.Music
+  music : [dynamic]rl.Music,
+  volume : f32
 }
 
 wait_for_dropped_files :: proc(q: ^Queue) {
@@ -33,6 +34,20 @@ queue_load_music :: proc(file_path: cstring, q: ^Queue) {
   music.looping = false
   append_elem(&q.music, music)
 } 
+
+set_song_loop :: proc(q: ^Queue) {
+  song : ^rl.Music = &q.music[q.current_music]
+  if song.looping {
+    song.looping = false
+  } else {
+    song.looping = true
+  } 
+}
+
+set_volume :: proc(q: ^Queue, volume : f32) {
+  song : ^rl.Music = &q.music[q.current_music]
+  rl.SetMusicVolume(song^, volume)
+}
 
 queue_play_next :: proc(q: ^Queue) {
   queue_count := cast(u32)len(q.music)
