@@ -5,45 +5,78 @@ import "core:fmt"
 import "core:strings"
 
 Queue :: struct{
-  path_list : [dynamic] cstring,
-  pos : i32,
-  music : rl.Music
+  pos : u32,
+  current_music : u32,
+  music : [dynamic]rl.Music
 }
 
-add_path :: proc(file_path: cstring, q: ^Queue){
-   append_elem(&q.path_list, strings.clone_to_cstring(cast(string)file_path))
+wait_for_dropped_files :: proc(q: ^Queue) {
+  if rl.IsFileDropped() {
+    dropped_files := rl.LoadDroppedFiles()
+    defer rl.UnloadDroppedFiles(dropped_files)
+
+    paths := dropped_files.paths[:dropped_files.count]
+
+    for &path in paths {
+      is_wav := rl.IsFileExtension(path, ".wav")
+      is_mp3 := rl.IsFileExtension(path, ".mp3")
+      is_ogg := rl.IsFileExtension(path, ".ogg")
+      if is_wav || is_mp3 || is_ogg {
+        queue_load_music(path, q)
+      }
+    }
+  }
+}
+
+queue_load_music :: proc(file_path: cstring, q: ^Queue) {
+  music := rl.LoadMusicStream(file_path)
+  music.looping = false
+  append_elem(&q.music, music)
 } 
-play_next :: proc(q: ^Queue){
-  prev_music := q.music
-  q.pos += 1
-  q.music = rl.LoadMusicStream(q.path_list[q.pos])
-  rl.UnloadMusicStream(prev_music)
-  ordered_remove(&q.path_list, cast(int) q.pos - 1)
-  rl.PlayMusicStream(q.music)
+
+queue_play_next :: proc(q: ^Queue) {
+  queue_count := cast(u32)len(q.music)
+
+  if queue_count > 0 && q.pos < queue_count {
+    queue_play(q, q.pos)
+    q.pos += 1
+    fmt.println("Play next!")
+  }
 }
   
-play :: proc(q: ^Queue){
-  path : cstring = q.path_list[0]
-  q.music = rl.LoadMusicStream(path)
-  rl.PlayMusicStream(q.music) 
+queue_play :: proc(q: ^Queue, pos: u32) {
+  q.current_music = pos
+  rl.PlayMusicStream(q.music[q.current_music])
 }
 
-is_playing :: proc(q: ^Queue) -> bool {
-  return rl.IsMusicStreamPlaying(q.music)
+queue_is_playing :: proc(q: ^Queue) -> bool {
+  queue_count := cast(u32)len(q.music)
+  if queue_count == 0 || q.current_music >= queue_count {
+    return false
+  }
+  return rl.IsMusicStreamPlaying(q.music[q.current_music])
 }
 
-update :: proc(m: rl.Music){
-  rl.UpdateMusicStream(m)
+queue_update :: proc(q: ^Queue) {
+  rl.UpdateMusicStream(q.music[q.current_music])
 }
 
-pause :: proc(q: ^Queue){
-  rl.PauseMusicStream(q.music)
+queue_pause :: proc(q: ^Queue) {
+  rl.PauseMusicStream(q.music[q.current_music])
 }
 
-stop :: proc(q: ^Queue){
-  rl.StopMusicStream(q.music)
+queue_stop :: proc(q: ^Queue) {
+  rl.StopMusicStream(q.music[q.current_music])
 }
 
-clear_queue :: proc(q: ^Queue) {
-  clear(&q.path_list) 
+queue_clear :: proc(q: ^Queue) {
+  //Maybe we don't have to delete all the music loaded
+  //if the user decides to clear queue? 
+  for &music in q.music {
+    rl.UnloadMusicStream(music)
+  }
+
+  if len(q.music) > 0 do clear(&q.music)
+  q.pos = 0
+  q.current_music = 0
 }
