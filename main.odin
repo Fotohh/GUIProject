@@ -8,9 +8,15 @@ import rl "vendor:raylib"
 import m "music"
 
 main :: proc() { 
-  config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE }
+  config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE, rl.ConfigFlag.BORDERLESS_WINDOWED_MODE }
   rl.SetConfigFlags(config_flags)
   rl.InitWindow(1600, 1480, "Sqr")
+
+  current_monitor := rl.GetCurrentMonitor()
+  rl.SetWindowPosition(
+    cast(i32)rl.GetMonitorWidth(current_monitor) / 2 - (1600 / 2), 
+    cast(i32)rl.GetMonitorHeight(current_monitor) / 2 - (1480 / 2),
+  )
 
   pixel_map : [dynamic][64 * 64][2]i32
 
@@ -59,12 +65,11 @@ main :: proc() {
   }
   rl.EndTextureMode()
 
-  px_format := cast(i32)rl.PixelFormat.UNCOMPRESSED_R8G8B8
+  px_format := cast(i32)rl.PixelFormat.UNCOMPRESSED_R32G32B32A32
   px_data_raw := rl.rlReadTexturePixels(pixel_buffer.texture.id, px_map_size, px_map_size, px_format)
+  fmt.println(size_of(px_data_raw))
   px_data_mem := cast([^]u8)px_data_raw
   px_data := px_data_mem[:px_map_size*px_map_size]
-
-  img := rl.LoadImageFromMemory(".png", px_data_raw, px_map_size*px_map_size)
 
   rl.InitAudioDevice()
   defer rl.CloseAudioDevice()
@@ -80,12 +85,17 @@ main :: proc() {
     camera.target.x = cast(f32)screen_center_w - camera.offset.x
     camera.target.y = cast(f32)screen_center_h - camera.offset.y
 
+    if rl.IsWindowResized() {
+      camera.offset = rl.Vector2 { cast(f32)screen_center_w, cast(f32)screen_center_h }
+    }
+
     if rl.IsMouseButtonDown(rl.MouseButton.MIDDLE) {
       screen_center : rl.Vector2 = { cast(f32)screen_center_w, cast(f32)screen_center_h }
       camera.offset += rl.GetMouseDelta() * 100.0 * rl.GetFrameTime()
     }
     
     if (rl.IsMouseButtonDown(rl.MouseButton.RIGHT)) {
+    
     }
     
     mouse_wheel_delta := rl.GetMouseWheelMove()
