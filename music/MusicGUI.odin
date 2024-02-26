@@ -34,3 +34,7 @@ loop_button :: proc(music_queue: ^Queue){
     }
   }
 }
+
+volume_silder :: proc(music_queue: ^Queue) {
+  rl.GuiSlider(rl.Rectangle{50,300,50,50}, "Minimum Volume", "Maximum Volume", &music_queue.volume, 0, 100)
+}
