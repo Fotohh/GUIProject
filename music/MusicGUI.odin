@@ -21,7 +21,7 @@ pause_button :: proc(music_queue: ^Queue){
 
 loop_button :: proc(music_queue: ^Queue){
   @(static) loop_button_text : cstring = "Loop Song: On"
-  if rl.GuiButton(rl.Rectangle{50,510,200,50}, loop_button_text) {
+  if rl.GuiButton(rl.Rectangle{50,600,200,50}, loop_button_text) {
     if len(&music_queue.music) > 0 {
       song : ^rl.Music = &music_queue.music[music_queue.current_music]
       if song.looping {
@@ -33,4 +33,8 @@ loop_button :: proc(music_queue: ^Queue){
       }
     }
   }
+}
+
+volume_silder :: proc(music_queue: ^Queue) {
+  rl.GuiSlider(rl.Rectangle{100,300,250,50}, "Minimum Volume", "Maximum Volume", &music_queue.volume, 0.0, 1.0)
 }
