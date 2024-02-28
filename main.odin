@@ -127,7 +127,13 @@ main :: proc() {
 
     rl.DrawFPS(0, 0)
 
-    m.pause_button(&music_queue)
+    if(len(music_queue.music) > 0){
+      m.pause_button(&music_queue)
+      m.volume_silder(&music_queue)
+      m.set_volume(&music_queue, music_queue.volume)
+      m.loop_button(&music_queue)
+      m.music_time_slider(&music_queue)
+    }
   }
   rl.CloseWindow()
 }
