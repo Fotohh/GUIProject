@@ -1,0 +1,14 @@
+<<<<<<< HEAD
+
+#out files
+out/
+
+
+#vscode proj files
+.vscode/
+*.o
+.vscode/settings.json
+=======
+GUIProject.obj
+GUIProject.exe
+>>>>>>> ee36c84ed616ef2527bcc96e5bad42cbb8f2f11c

@@ -178,6 +178,5 @@ main :: proc() {
     rl.DrawCircle(190, 95, 20, current_color == 0 ? rl.RED : current_color == 1 ? rl.BLUE : rl.GREEN)
     rl.DrawText(rl.TextFormat("Size: %.1f", data.radius), 40, 120, 32, rl.BLACK)
   }
-
   rl.CloseWindow()
 }
