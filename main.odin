@@ -1,11 +1,13 @@
 package main
 
 /*
-  Basic controls (temporary)
+  How to run:
 
-  C - Clear pixels
-  E - Cycle pixel colors
-  <- -> - Change brush size
+  -- px width height
+  
+  Ex: px 100 100
+
+  Initializes a 100x100 pixel grid
 */
 
 import tracy "odin-tracy"
@@ -13,25 +15,56 @@ import rl "vendor:raylib"
 
 import "core:fmt"
 import "core:math"
+import "core:os"
+import "core:strconv"
 
 import m "music"
 import px "pixel"
 import painter "painter"
 
 main :: proc() { 
+  args := os.args[1:]
+  if len(args) != 2 {
+    fmt.println("Expected 2 arguments. Width and height.")
+    return
+  }
+
+  map_width, arg_1_ok := strconv.parse_int(args[0])
+  if !arg_1_ok {
+    fmt.println("Invalid width.")
+    return
+  }
+  map_height, arg_2_ok := strconv.parse_int(args[0])
+  if !arg_2_ok {
+    fmt.println("Invalid height.")
+    return
+  }
+
+  if map_width > 1024 || map_height > 1024 || map_width < 8 || map_height < 8 {
+    fmt.println("Map width and height must be between the range 8..1024")
+    return
+  }
+
   config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE, rl.ConfigFlag.BORDERLESS_WINDOWED_MODE }
   rl.SetConfigFlags(config_flags)
-  rl.InitWindow(1600, 1480, "Sqr")
-
+  rl.SetTraceLogLevel(rl.TraceLogLevel.FATAL)
+  rl.InitWindow(600, 480, "Sqr")
+  
   rl.SetTargetFPS(120)
 
   tracy.SetThreadName("Main")
  
   current_monitor := rl.GetCurrentMonitor()
+
+  w := rl.GetMonitorWidth(current_monitor)
+  h := rl.GetMonitorHeight(current_monitor)
+
   rl.SetWindowPosition(
     cast(i32)rl.GetMonitorWidth(current_monitor) / 2 - (1600 / 2), 
     cast(i32)rl.GetMonitorHeight(current_monitor) / 2 - (1480 / 2),
   )
+
+  rl.SetWindowSize(w / 2, h / 2)
 
   screen_center_w := cast(i32)rl.GetScreenWidth() / 2
   screen_center_h := cast(i32)rl.GetScreenHeight() / 2
@@ -43,8 +76,8 @@ main :: proc() {
     target = rl.Vector2 { 0.0, 0.0 },
   }
 
-  px_map_size_x : i32 = 192
-  px_map_size_y : i32 = 108
+  px_map_size_x : i32 = cast(i32)map_width
+  px_map_size_y : i32 = cast(i32)map_height
 
   pixel_map, ok := px.pixel_map_create(px_map_size_x, px_map_size_y)
   defer if ok do px.pixel_map_destroy(&pixel_map) 
@@ -68,12 +101,6 @@ main :: proc() {
   canvas := painter.Canvas {}
   canvas = make_map(map[[2]i32]bool, px_map_size_x * px_map_size_y)
   defer delete_map(canvas)
-
-  for x in 0..<px_map_size_x {
-    for y in 0..<px_map_size_y {
-      canvas[[2]i32 { x, y }] = false
-    }
-  }
  
   data := painter.PainterData {}
 
@@ -99,6 +126,9 @@ main :: proc() {
   data.color = []px.Pixel { px.Pixel { color.r, color.g, color.b, color.a } }
 
   controls_on := false
+
+  rl.SetExitKey(rl.KeyboardKey.KEY_NULL)
+
 
   for !rl.WindowShouldClose() { 
 
@@ -135,7 +165,7 @@ main :: proc() {
     } 
   
     mouse_wheel_delta := rl.GetMouseWheelMove()
-    camera.zoom = math.clamp(camera.zoom + cast(f32)mouse_wheel_delta / 5.0, 0.1, 10.0)
+    camera.zoom = math.clamp(camera.zoom + cast(f32)mouse_wheel_delta / 5.0, 1.0, 10.0)
 
     m.wait_for_dropped_files(&music_queue)
     if !m.queue_is_playing(&music_queue) {
@@ -147,7 +177,7 @@ main :: proc() {
     rl.BeginDrawing()
     defer rl.EndDrawing()
 
-    rl.ClearBackground(rl.DARKGRAY)
+    rl.ClearBackground(rl.Color { 25, 26, 38, 1 })
 
     rl.BeginMode2D(camera)
  
