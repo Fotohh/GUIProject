@@ -1,3 +1,1 @@
-rm ./GUIProject.exe
-odin build .
-odin run .
+odin build . -out:px.exe
