@@ -20,6 +20,11 @@ data_cond: sync.Cond
 data_wait: bool
 
 @(private)
+lock_canvas_cond: sync.Cond
+@(private)
+lock_canvas: bool = false
+
+@(private)
 painter_thread: ^thread.Thread
 
 PainterData :: struct {
@@ -35,10 +40,6 @@ PainterData :: struct {
 bresenham_circle :: proc(data: ^PainterData, x_pos, y_pos: i32, radius: f32) {
   tracy.ZoneN("bresenham_circle")
 
-  sync.lock(&data_lock)
-
-  for data_wait do sync.cond_wait(&data_cond, &data_lock)
-
   for x := -radius; x < radius; x += 1 {
     hh := cast(i32)math.sqrt(cast(f32)(radius * radius - x * x))
     rx := (x_pos + cast(i32)x)
@@ -52,18 +53,19 @@ bresenham_circle :: proc(data: ^PainterData, x_pos, y_pos: i32, radius: f32) {
         data.canvas[pos] = true
       }
     } 
-  }
- 
-  sync.unlock(&data_lock)
+  } 
 }
  
 bresenham_line :: proc(data: ^PainterData, x1, y1: i32) { 
   tracy.ZoneNS("bresenham_line")   
 
+  for data_wait do sync.cond_wait(&data_cond, &data_lock)
+
+
   x0 := cast(i32)data.x0
   y0 := cast(i32)data.y0
 
-  dx := x1 - x0
+  dx := x1 - x0   
   dy := y1 - y0
 
   sx : i32 = dx >= 0 ? 1 : -1
@@ -77,31 +79,30 @@ bresenham_line :: proc(data: ^PainterData, x1, y1: i32) {
   
   p := 2 * (math.abs(dy)) - math.abs(dx)
 
-  radius : f32 = data.radius
-  half_radius : f32 = radius * 0.5
+  radius : i32 = cast(i32)data.radius
+  half_radius : i32 = cast(i32)(cast(f32)radius * 0.5)
 
-  bresenham_circle(data, x0, y0, radius)
+  bresenham_circle(data, x0, y0, data.radius)
 
-  for i in 0..<math.abs(dx) - cast(i32)half_radius {
+  for i in 0..<math.abs(dx) - half_radius {
     if p < 0 {
       if !is_swapped {
         x0 += sx
-        bresenham_circle(data, x0, y0, radius)
+        bresenham_circle(data, x0, y0, data.radius)
       } else {
         y0 += sy
-        bresenham_circle(data, x0, y0, radius)
+        bresenham_circle(data, x0, y0, data.radius)
       }
       p = p + 2 * math.abs(dy)
     } else {
       x0 += sx
       y0 += sy
 
-      bresenham_circle(data, x0, y0, radius)
+      bresenham_circle(data, x0, y0, data.radius)
 
-      p = p + 2 * math.abs(dy) - 2 * math.abs(dx)
+      p = p + 2 * math.abs(dy) - 2 * math.abs(dx) 
     }
   }
-
 }
 
 mouse_to_pixels :: proc(world_x, world_y, map_w, map_h: f32) -> (f32, f32) {
@@ -112,6 +113,10 @@ mouse_on_grid :: proc(
   data: ^PainterData
 ) {
   tracy.ZoneN("mouse_on_grid")
+
+  sync.lock(&data_lock)
+
+  for lock_canvas do sync.cond_wait(&lock_canvas_cond, &data_lock)
  
   mouse_position := rl.GetMousePosition()
   world := rl.GetScreenToWorld2D(mouse_position, data.camera)
@@ -145,6 +150,8 @@ mouse_on_grid :: proc(
   } else if rl.IsMouseButtonReleased(rl.MouseButton.LEFT) {
     data.x0, data.y0 = 0, 0
   } 
+
+  sync.unlock(&data_lock)
 }
 
 painter_update_pixel_map :: proc(pixel_map: ^px.PixelMap, data: ^PainterData) {
@@ -213,4 +220,13 @@ painter_worker_destroy :: proc() {
     thread.terminate(painter_thread, 0)
   }
   thread.destroy(painter_thread)
+}
+
+painter_lock_canvas :: proc(lock: bool) {
+  sync.lock(&data_lock) 
+
+  lock_canvas = lock
+  sync.cond_signal(&lock_canvas_cond)
+
+  sync.unlock(&data_lock)
 }
