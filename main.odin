@@ -5,7 +5,7 @@ package main
 
   C - Clear pixels
   E - Cycle pixel colors
-
+  <- -> - Change brush size
 */
 
 import tracy "odin-tracy"
@@ -43,8 +43,8 @@ main :: proc() {
     target = rl.Vector2 { 0.0, 0.0 },
   }
 
-  px_map_size_x : i32 = 1920
-  px_map_size_y : i32 = 1080
+  px_map_size_x : i32 = 192
+  px_map_size_y : i32 = 108
 
   pixel_map, ok := px.pixel_map_create(px_map_size_x, px_map_size_y)
   defer if ok do px.pixel_map_destroy(&pixel_map) 
@@ -85,15 +85,6 @@ main :: proc() {
   data.y0 = 0
   data.camera = camera
 
-  red := [1]px.Pixel { { 255, 0, 0, 255 } }
-  blue := [1]px.Pixel { { 0, 0, 255, 255 } }
-  green := [1]px.Pixel { { 0, 255, 0, 255 } }
-
-  colors := [][1]px.Pixel { red, blue, green }
-
-  current_color := 0
-
-  data.color = red[:]
   data.radius = 5.0 
 
   reserve(&data.updated, len(canvas))
@@ -102,30 +93,30 @@ main :: proc() {
   painter.painter_worker_create(&data)
   defer painter.painter_worker_destroy()
 
+  current_color : rl.Color = rl.BLACK
+  color : rl.Color = current_color
+
+  data.color = []px.Pixel { px.Pixel { color.r, color.g, color.b, color.a } }
+
+  controls_on := false
+
   for !rl.WindowShouldClose() { 
 
     defer tracy.FrameMark("MainLoop") 
 
-    tracy.Zone()
-
-    if rl.IsKeyPressed(rl.KeyboardKey.E) {
-      current_color += 1
-      current_color = current_color % 3
-      data.color = colors[current_color][:]
-      painter.painter_reset_canvas_update(&data)
-    }
+    tracy.Zone() 
 
     if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
       painter.painter_clear_pixel_map(&pixel_map, &data) 
     }
 
-    if rl.IsKeyDown(rl.KeyboardKey.RIGHT) do data.radius += 1.0
-    if rl.IsKeyDown(rl.KeyboardKey.LEFT) do data.radius -= 1.0
-
-    data.radius = math.clamp(data.radius, 1.0, 200.0)
-
+    if (rl.IsKeyPressed(rl.KeyboardKey.TAB)) {
+      controls_on = !controls_on
+      painter.painter_lock_canvas(controls_on)
+    }
+     
     data.camera = camera
-
+ 
     painter.painter_update_pixel_map(&pixel_map, &data)
 
     screen_center_w = cast(i32)rl.GetScreenWidth() / 2
@@ -173,10 +164,37 @@ main :: proc() {
 
     rl.DrawFPS(0, 0)
 
-    rl.DrawRectangle(30, 50, 500, 200, rl.GRAY)
+    rl.DrawRectangle(30, 50, 800, 200, rl.GRAY)
     rl.DrawText("Color:", 40, 80, 32, rl.BLACK)
-    rl.DrawCircle(190, 95, 20, current_color == 0 ? rl.RED : current_color == 1 ? rl.BLUE : rl.GREEN)
+    rl.DrawCircle(190, 95, 20, current_color)
     rl.DrawText(rl.TextFormat("Size: %.1f", data.radius), 40, 120, 32, rl.BLACK)
+    rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom", 40, 160, 32, rl.BLACK)
+    rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan", 35, 205, 32, rl.BLACK)
+
+    
+    if controls_on {
+      wf := cast(f32)screen_center_w
+      hf := cast(f32)screen_center_h
+      rl.DrawRectangle(cast(i32)wf - 400, cast(i32)hf - 400, 800, 800, rl.Color { 0, 0, 46, 255 })
+      rl.GuiColorPicker(rl.Rectangle { wf - 220, hf - 200, 200.0, 200.0 }, "Colors", &color)
+
+      rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 32)
+      if rl.GuiButton(rl.Rectangle { wf - 220, hf + 10, 200.0, 50.0 }, "Set Color") {
+        current_color = color
+        data.color = []px.Pixel { px.Pixel { current_color.r, current_color.g, current_color.b, 255 } }
+        painter.painter_reset_canvas_update(&data)
+      }
+
+      rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 24)
+      rl.GuiSliderBar(
+        rl.Rectangle { wf - 90, hf + 100, 100.0, 50.0 }, 
+        "Brush Size:", 
+        rl.TextFormat("%.1f", data.radius),
+        &data.radius,
+        1,
+        50,
+      )
+    }
   }
   rl.CloseWindow()
 }
