@@ -24,8 +24,18 @@ import painter "painter"
 
 main :: proc() { 
   args := os.args[1:]
-  if len(args) != 2 {
-    fmt.println("Expected 2 arguments. Width and height.")
+  if len(args) > 2 {
+    fmt.println("Expected 2 arguments. Try 'px help'?")
+    return
+  } else if len(args) == 1 {
+    if args[0] == "help" {
+      fmt.println("px [width] [height]")
+      fmt.println("Initializes the app with a [width]x[height] pixel grid.")
+      fmt.println("Minimum size is 16x16 and maximum height is 1024x1024.")
+      return
+    }
+  } else if len(args) == 0{
+    fmt.println("Try 'px help'?")
     return
   }
 
@@ -40,8 +50,8 @@ main :: proc() {
     return
   }
 
-  if map_width > 1024 || map_height > 1024 || map_width < 8 || map_height < 8 {
-    fmt.println("Map width and height must be between the range 8..1024")
+  if map_width > 1024 || map_height > 1024 || map_width < 16 || map_height < 16 {
+    fmt.println("Map width and height must be between the range 16..1024")
     return
   }
 
@@ -165,7 +175,7 @@ main :: proc() {
     } 
   
     mouse_wheel_delta := rl.GetMouseWheelMove()
-    camera.zoom = math.clamp(camera.zoom + cast(f32)mouse_wheel_delta / 5.0, 1.0, 10.0)
+    camera.zoom = math.clamp(camera.zoom + cast(f32)mouse_wheel_delta / 5.0, 1.0, 20.0)
 
     m.wait_for_dropped_files(&music_queue)
     if !m.queue_is_playing(&music_queue) {
