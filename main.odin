@@ -25,17 +25,17 @@ import painter "painter"
 main :: proc() { 
   args := os.args[1:]
   if len(args) > 2 {
-    fmt.println("Expected 2 arguments. Try 'px help'?")
+    fmt.println("Expected 2 arguments. Try 'sqr help'?")
     return
   } else if len(args) == 1 {
     if args[0] == "help" {
-      fmt.println("px [width] [height]")
+      fmt.println("sqr width height")
       fmt.println("Initializes the app with a [width]x[height] pixel grid.")
       fmt.println("Minimum size is 16x16 and maximum height is 1024x1024.")
       return
     }
   } else if len(args) == 0{
-    fmt.println("Try 'px help'?")
+    fmt.println("Try 'sqr help'?")
     return
   }
 
@@ -207,7 +207,8 @@ main :: proc() {
     rl.DrawRectangle(30, 50, 800, 200, rl.GRAY)
     rl.DrawText("Color:", 40, 80, 32, rl.BLACK)
     rl.DrawCircle(190, 95, 20, current_color)
-    rl.DrawText(rl.TextFormat("Size: %.1f", data.radius), 40, 120, 32, rl.BLACK)
+    rl.DrawText(rl.TextFormat("Map: %dx%d px", map_width, map_height), 230, 80, 32, rl.BLACK)
+    rl.DrawText(rl.TextFormat("Brush Size: %.1f", data.radius), 40, 120, 32, rl.BLACK)
     rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom", 40, 160, 32, rl.BLACK)
     rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan", 35, 205, 32, rl.BLACK)
 

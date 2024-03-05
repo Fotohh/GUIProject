@@ -1,1 +1,1 @@
-odin build . -out:px.exe
+odin build . -out:sqr.exe
