@@ -37,6 +37,15 @@ pixel_brush :: proc(data: ^PainterData, x_pos, y_pos: i32) {
   x_end := x_pos + cast(i32)data.radius
   y_end := y_pos + cast(i32)data.radius
 
+  if data.radius == 1.0 {
+    pos := [2] i32 { x_pos, y_pos }
+    if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
+      if data.canvas[pos] == false do append(&data.updated, pos)
+      data.canvas[pos] = true
+    }
+    return
+  }
+
   for x := x_start; x < x_end; x += 1 {
     for y := y_start; y < y_end; y += 1 {
       pos := [2] i32 { x, y }
