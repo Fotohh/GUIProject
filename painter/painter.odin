@@ -29,6 +29,7 @@ painter_thread: ^thread.Thread
 
 PainterData :: struct {
   canvas: Canvas,
+  brush: proc(data: ^PainterData, x_pos, y_pos: i32),
   width, height: i32,
   x0, y0, cxf, cyf: f32,
   camera: rl.Camera2D,
@@ -37,24 +38,6 @@ PainterData :: struct {
   radius: f32
 }
 
-bresenham_circle :: proc(data: ^PainterData, x_pos, y_pos: i32, radius: f32) {
-  tracy.ZoneN("bresenham_circle")
-
-  for x := -radius; x < radius; x += 1 {
-    hh := cast(i32)math.sqrt(cast(f32)(radius * radius - x * x))
-    rx := (x_pos + cast(i32)x)
-    ph := y_pos + hh
- 
-    for y := y_pos - hh; y < ph; y += 1 {
-      pos := [2]i32 { rx, y }
-
-      if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
-        if data.canvas[pos] == false do append(&data.updated, pos)
-        data.canvas[pos] = true
-      }
-    } 
-  } 
-}
  
 bresenham_line :: proc(data: ^PainterData, x1, y1: i32) { 
   tracy.ZoneNS("bresenham_line")   
@@ -79,26 +62,23 @@ bresenham_line :: proc(data: ^PainterData, x1, y1: i32) {
   
   p := 2 * (math.abs(dy)) - math.abs(dx)
 
-  radius : i32 = cast(i32)data.radius
-  half_radius : i32 = cast(i32)(cast(f32)radius * 0.5)
+  data.brush(data, x0, y0)
 
-  bresenham_circle(data, x0, y0, data.radius)
-
-  for i in 0..<math.abs(dx) - half_radius {
+  for i in 0..<math.abs(dx) {
     if p < 0 {
       if !is_swapped {
         x0 += sx
-        bresenham_circle(data, x0, y0, data.radius)
+        data.brush(data, x0, y0)
       } else {
         y0 += sy
-        bresenham_circle(data, x0, y0, data.radius)
+        data.brush(data, x0, y0)
       }
       p = p + 2 * math.abs(dy)
     } else {
       x0 += sx
       y0 += sy
 
-      bresenham_circle(data, x0, y0, data.radius)
+      data.brush(data, x0, y0)
 
       p = p + 2 * math.abs(dy) - 2 * math.abs(dx) 
     }

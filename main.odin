@@ -22,6 +22,7 @@ import m "music"
 import px "pixel"
 import painter "painter"
 
+
 main :: proc() { 
   args := os.args[1:]
   if len(args) > 2 {
@@ -122,6 +123,8 @@ main :: proc() {
   data.y0 = 0
   data.camera = camera
 
+  data.brush = painter.circle_brush
+
   data.radius = 5.0 
 
   reserve(&data.updated, len(canvas))
@@ -139,6 +142,7 @@ main :: proc() {
 
   rl.SetExitKey(rl.KeyboardKey.KEY_NULL)
 
+  current_brush : painter.BrushType = painter.BrushType.Circle
 
   for !rl.WindowShouldClose() { 
 
@@ -211,16 +215,22 @@ main :: proc() {
     rl.DrawText(rl.TextFormat("Brush Size: %.1f", data.radius), 40, 120, 32, rl.BLACK)
     rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom", 40, 160, 32, rl.BLACK)
     rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan", 35, 205, 32, rl.BLACK)
+    
+    switch current_brush {
+      case .Circle: rl.DrawText("Circle Brush", 510, 90, 24, rl.WHITE)
+      case .Box: rl.DrawText("Box Brush", 510, 90, 24, rl.WHITE)
+      case .Calligraphy: rl.DrawText("Calligraphy Brush", 510, 90, 24, rl.WHITE)
+    }
 
     
     if controls_on {
       wf := cast(f32)screen_center_w
       hf := cast(f32)screen_center_h
       rl.DrawRectangle(cast(i32)wf - 400, cast(i32)hf - 400, 800, 800, rl.Color { 0, 0, 46, 255 })
-      rl.GuiColorPicker(rl.Rectangle { wf - 220, hf - 200, 200.0, 200.0 }, "Colors", &color)
+      rl.GuiColorPicker(rl.Rectangle { wf - 380, hf - 300, 200.0, 200.0 }, "Colors", &color)
 
       rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 32)
-      if rl.GuiButton(rl.Rectangle { wf - 220, hf + 10, 200.0, 50.0 }, "Set Color") {
+      if rl.GuiButton(rl.Rectangle { wf - 380, hf - 50, 200.0, 50.0 }, "Set Color") {
         current_color = color
         data.color = []px.Pixel { px.Pixel { current_color.r, current_color.g, current_color.b, 255 } }
         painter.painter_reset_canvas_update(&data)
@@ -228,13 +238,37 @@ main :: proc() {
 
       rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 24)
       rl.GuiSliderBar(
-        rl.Rectangle { wf - 90, hf + 100, 100.0, 50.0 }, 
+        rl.Rectangle { wf - 250, hf + 50, 100.0, 50.0 }, 
         "Brush Size:", 
         rl.TextFormat("%.1f", data.radius),
         &data.radius,
         1,
         50,
       )
+
+      if rl.GuiLabelButton(
+        rl.Rectangle { wf - 300, hf + 200, 100.0, 50.0 },
+        "Circle Brush",
+      ) {
+        painter.set_brush_type(&data, painter.circle_brush)
+        current_brush = painter.BrushType.Circle
+      }
+
+      if rl.GuiLabelButton(
+        rl.Rectangle { wf - 100, hf + 200, 100.0, 50.0 },
+        "Box Brush",
+      ) {
+        painter.set_brush_type(&data, painter.pixel_brush)
+        current_brush = painter.BrushType.Box
+      }
+
+      if rl.GuiLabelButton(
+        rl.Rectangle { wf + 100, hf + 200, 100.0, 50.0 },
+        "Calligraphy Brush",
+      ) {
+        painter.set_brush_type(&data, painter.calligraphy)
+        current_brush = painter.BrushType.Calligraphy
+      }
     }
   }
   rl.CloseWindow()
