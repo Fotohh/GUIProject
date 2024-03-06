@@ -136,6 +136,10 @@ main :: proc() {
   current_color : rl.Color = rl.BLACK
   color : rl.Color = current_color
 
+  eraser_color := []px.Pixel { px.Pixel { 255, 255, 255, 255 } }
+  prev_eraser_on := false
+  eraser_on := false
+
   data.color = []px.Pixel { px.Pixel { color.r, color.g, color.b, color.a } }
 
   controls_on := false
@@ -208,7 +212,7 @@ main :: proc() {
 
     rl.DrawFPS(0, 0)
 
-    rl.DrawRectangle(30, 50, 800, 200, rl.GRAY)
+    rl.DrawRectangle(30, 50, 800, 200, rl.BLUE)
     rl.DrawText("Color:", 40, 80, 32, rl.BLACK)
     rl.DrawCircle(190, 95, 20, current_color)
     rl.DrawText(rl.TextFormat("Map: %dx%d px", map_width, map_height), 230, 80, 32, rl.BLACK)
@@ -217,22 +221,26 @@ main :: proc() {
     rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan", 35, 205, 32, rl.BLACK)
     
     switch current_brush {
-      case .Circle: rl.DrawText("Circle Brush", 510, 90, 24, rl.WHITE)
-      case .Box: rl.DrawText("Box Brush", 510, 90, 24, rl.WHITE)
-      case .Calligraphy: rl.DrawText("Calligraphy Brush", 510, 90, 24, rl.WHITE)
+      case .Circle: rl.DrawText("Circle Brush", 510, 70, 24, rl.WHITE)
+      case .Box: rl.DrawText("Box Brush", 510, 70, 24, rl.WHITE)
+      case .Calligraphy: rl.DrawText("Calligraphy Brush", 510, 70, 24, rl.WHITE)
     }
 
+    text : cstring = eraser_on ? "Eraser On" : "Eraser Off"
+    rl.DrawText(text, 510, 100, 24, rl.WHITE)
     
     if controls_on {
+      current_brush_color_data := []px.Pixel { px.Pixel { current_color.r, current_color.g, current_color.b, 255 } }
+
       wf := cast(f32)screen_center_w
       hf := cast(f32)screen_center_h
       rl.DrawRectangle(cast(i32)wf - 400, cast(i32)hf - 400, 800, 800, rl.Color { 0, 0, 46, 255 })
       rl.GuiColorPicker(rl.Rectangle { wf - 380, hf - 300, 200.0, 200.0 }, "Colors", &color)
 
       rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 32)
-      if rl.GuiButton(rl.Rectangle { wf - 380, hf - 50, 200.0, 50.0 }, "Set Color") {
+      if rl.GuiButton(rl.Rectangle { wf - 380, hf - 50, 200.0, 50.0 }, "Set Color") && !eraser_on {
         current_color = color
-        data.color = []px.Pixel { px.Pixel { current_color.r, current_color.g, current_color.b, 255 } }
+        data.color = current_brush_color_data
         painter.painter_reset_canvas_update(&data)
       }
 
@@ -269,6 +277,14 @@ main :: proc() {
         painter.set_brush_type(&data, painter.calligraphy)
         current_brush = painter.BrushType.Calligraphy
       }
+
+      rl.GuiCheckBox(rl.Rectangle { wf - 60, hf + 45, 60.0, 60.0 }, "Eraser", &eraser_on)
+
+      if eraser_on != prev_eraser_on {
+        prev_eraser_on = eraser_on
+        data.color = eraser_on ? eraser_color : current_brush_color_data
+        painter.painter_reset_canvas_update(&data)
+      } 
     }
   }
   rl.CloseWindow()
