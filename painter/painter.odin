@@ -34,7 +34,7 @@ PainterData :: struct {
   x0, y0, cxf, cyf: f32,
   camera: rl.Camera2D,
   updated: [dynamic][2]i32,
-  color: []px.Pixel,
+  color: px.Pixel,
   radius: f32
 }
 
@@ -110,10 +110,7 @@ mouse_on_grid :: proc(
 
   if rl.IsMouseButtonDown(rl.MouseButton.LEFT) && in_grid && should_move {
     world_after := rl.GetScreenToWorld2D(rl.GetMousePosition(), data.camera)
-
-    red : [1*1]px.Pixel
-    red[0] = { 0, 0, 0, 255 }
-
+ 
     if data.x0 == 0 || data.y0 == 0 {
       data.x0, data.y0 = mouse_to_pixels(world.x, world.y, cast(f32)data.width, cast(f32)data.height)
     }
@@ -139,11 +136,14 @@ painter_update_pixel_map :: proc(pixel_map: ^px.PixelMap, data: ^PainterData) {
     data_wait = true
     sync.lock(&data_lock)
   }
- 
+
+  color : [1]px.Pixel
+  color[0] = data.color
+
   for len(data.updated) > 0 {
     pos, ok := pop_safe(&data.updated)
     if ok {
-      px.pixel_map_update_rect(pixel_map, cast(f32)pos.x, cast(f32)pos.y, 1, 1, data.color[:])
+      px.pixel_map_update_rect(pixel_map, cast(f32)pos.x, cast(f32)pos.y, 1, 1, color[:])
     }
 
     if (len(data.updated) == 0) {
