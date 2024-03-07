@@ -55,10 +55,18 @@ queue_play_next :: proc(q: ^Queue) {
   if queue_count > 0 && q.pos < queue_count {
     queue_play(q, q.pos)
     q.pos += 1
-    fmt.println("Play next!")
   }
 }
   
+queue_skip :: proc(q: ^Queue) {
+  queue_count := cast(u32)len(q.music)
+
+  if queue_count > 1 && q.pos < queue_count {
+    queue_play(q, q.pos)
+    q.pos += 1
+  }
+}
+
 queue_play :: proc(q: ^Queue, pos: u32) {
   q.current_music = pos
   rl.PlayMusicStream(q.music[q.current_music])
