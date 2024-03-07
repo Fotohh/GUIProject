@@ -7,7 +7,7 @@ import "core:math"
 import px "../pixel"
 import "../painter"
 
-App :: struct {
+AppData :: struct {
   camera: rl.Camera2D,
   pixel_map: px.PixelMap,
   canvas: painter.Canvas,
@@ -52,7 +52,7 @@ app_get_screen_center :: proc() -> (i32, i32) {
   return screen_center_w, screen_center_h 
 }
 
-app_create :: proc(app: ^App, px_map_size_x: i32, px_map_size_y: i32) -> bool {
+app_create :: proc(app: ^AppData, px_map_size_x: i32, px_map_size_y: i32) -> bool {
   screen_center_w, screen_center_h := app_get_screen_center()
 
   app.camera = rl.Camera2D {
@@ -92,14 +92,15 @@ app_create :: proc(app: ^App, px_map_size_x: i32, px_map_size_y: i32) -> bool {
   return true
 }
 
-app_destroy :: proc(app: ^App) {
+app_destroy :: proc(app: ^AppData) {
+  rl.CloseWindow()
   px.pixel_map_destroy(&app.pixel_map) 
   delete_map(app.canvas)
   delete_dynamic_array(app.data.updated)
   painter.painter_worker_destroy()
 }
 
-app_update_camera :: proc(app: ^App) {
+app_update_camera :: proc(app: ^AppData) {
   screen_center_w, screen_center_h := app_get_screen_center()
   app.data.camera = app.camera
  
@@ -142,7 +143,7 @@ app_control_init :: proc() -> AppControls {
   }
 }
 
-app_update_basic_controls :: proc(app: ^App, controls: ^AppControls) {
+app_update_basic_controls :: proc(app: ^AppData, controls: ^AppControls) {
   if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
     painter.painter_clear_pixel_map(&app.pixel_map, &app.data) 
   }
@@ -153,7 +154,7 @@ app_update_basic_controls :: proc(app: ^App, controls: ^AppControls) {
   }
 }
 
-app_draw_canvas :: proc(app: ^App) {
+app_draw_canvas :: proc(app: ^AppData) {
   center_x, center_y := app.pixel_map.width / 2, app.pixel_map.height / 2
   rl.BeginMode2D(app.camera)
  
@@ -169,7 +170,7 @@ app_draw_canvas :: proc(app: ^App) {
   rl.EndMode2D()
 }
 
-app_draw_gui :: proc(app: ^App, controls: ^AppControls) {
+app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
   screen_center_w, screen_center_h := app_get_screen_center()
   rl.DrawFPS(0, 0)
 

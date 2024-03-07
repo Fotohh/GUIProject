@@ -26,7 +26,7 @@ main :: proc() {
   
   app.app_init(120)
 
-  app_data: app.App 
+  app_data: app.AppData 
   if !app.app_create(&app_data, px_map_size_x, px_map_size_y) {
     fmt.println("Failed to create app...")
     return
@@ -56,5 +56,4 @@ main :: proc() {
 
     painter.painter_update_pixel_map(&app_data.pixel_map, &app_data.data)
   }
-  rl.CloseWindow()
 }

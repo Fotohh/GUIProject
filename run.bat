@@ -1,2 +1,2 @@
 odin build . -out:sqr.exe
-sqr 16 16
+sqr 100 100
