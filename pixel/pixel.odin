@@ -8,7 +8,8 @@ Pixel :: [4]u8
 
 PixelMap :: struct {
   texture: rl.Texture2D,
-  width, height: i32 //width and height of chunks not individual pixels
+  width, height: i32, //width and height of chunks not individual pixels
+  original: [^]Pixel
 }
 
 pixel_map_create :: proc(width: i32, height: i32) -> (PixelMap, bool) {
@@ -39,6 +40,9 @@ pixel_map_create :: proc(width: i32, height: i32) -> (PixelMap, bool) {
 
   rl.SetTextureFilter(pixel_map.texture, rl.TextureFilter.POINT)
   pixel_map.texture = rl.LoadTextureFromImage(image)
+
+  format := cast(i32)rl.PixelFormat.UNCOMPRESSED_R8G8B8A8
+  pixel_map.original = cast([^]Pixel)rl.rlReadTexturePixels(pixel_map.texture.id, pixel_map.width, pixel_map.height, format)
   
   return pixel_map, true
 }
@@ -49,4 +53,5 @@ pixel_map_update_rect :: proc(pixel_map: ^PixelMap, x, y, w, h: f32, pixels: []P
 
 pixel_map_destroy :: proc(pixel_map: ^PixelMap) {
   rl.UnloadTexture(pixel_map.texture)
+  rl.MemFree(pixel_map.original)
 }
