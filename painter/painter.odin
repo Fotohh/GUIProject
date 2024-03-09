@@ -7,6 +7,7 @@ import lin "core:math/linalg"
 import "core:thread"
 import "core:sync"
 import "core:math"
+import "core:slice"
 
 import px "../pixel"
 
@@ -27,6 +28,17 @@ lock_canvas: bool = false
 @(private)
 painter_thread: ^thread.Thread
 
+Operation :: enum u8 {
+  Draw,
+  Clear
+}
+
+Action:: struct {
+  operation: Operation,
+  color: px.Pixel,
+  pixels: [][2]i32
+}
+
 PainterData :: struct {
   canvas: Canvas,
   brush: proc(data: ^PainterData, x_pos, y_pos: i32),
@@ -34,8 +46,11 @@ PainterData :: struct {
   x0, y0, cxf, cyf: f32,
   camera: rl.Camera2D,
   updated: [dynamic][2]i32,
+  updated_buf: [dynamic][2]i32,
   color: px.Pixel,
-  radius: f32
+  radius: f32,
+  undo_buffer: [dynamic]Action,
+  redo_buffer: [dynamic]Action
 }
 
  
@@ -123,12 +138,64 @@ mouse_on_grid :: proc(
       cast(i32)y1, 
     )
 
-    data.x0, data.y0 = x1, y1
-  } else if rl.IsMouseButtonReleased(rl.MouseButton.LEFT) {
-    data.x0, data.y0 = 0, 0
+    data.x0, data.y0 = x1, y1 
   } 
 
   sync.unlock(&data_lock)
+}
+
+painter_undo_redo :: proc(data: ^PainterData, pixel_map: ^px.PixelMap) {
+  if rl.IsMouseButtonReleased(rl.MouseButton.LEFT) {
+    data.x0, data.y0 = 0, 0 
+
+    action : Action
+
+    action.color = data.color
+    action.pixels = slice.clone(data.updated_buf[:])
+    clear(&data.updated_buf)
+
+    action.operation = .Draw
+    
+    append(&data.undo_buffer, action)
+    clear(&data.redo_buffer)
+  }
+
+
+  if rl.IsKeyPressed(rl.KeyboardKey.U) && len(data.undo_buffer) > 0 {
+    painter_clear_pixel_map(pixel_map, data, rl.WHITE)
+    prev_color := data.color
+    append(&data.redo_buffer, pop(&data.undo_buffer))
+    for i in 0..<len(data.undo_buffer) {
+      action := &data.undo_buffer[i]
+      if action.operation == .Draw {
+        data.updated = slice.clone_to_dynamic(action.pixels)
+        data.color = action.color
+        painter_update_pixel_map(pixel_map, data)  
+        painter_reset_canvas_update(data)
+      }
+    } 
+
+    data.color = prev_color
+  }
+
+  if rl.IsKeyPressed(rl.KeyboardKey.R) && len(data.redo_buffer) > 0 {
+    prev_color := data.color
+
+    action := pop(&data.redo_buffer)
+
+    if action.operation == .Draw {
+      data.updated = slice.clone_to_dynamic(action.pixels)
+      data.color = action.color
+      painter_update_pixel_map(pixel_map, data)  
+      painter_reset_canvas_update(data)
+    } 
+
+    append(&data.undo_buffer, action)
+
+
+    data.color = prev_color
+  }
+
 }
 
 painter_update_pixel_map :: proc(pixel_map: ^px.PixelMap, data: ^PainterData) {
@@ -164,7 +231,7 @@ painter_reset_canvas_update :: proc(painter: ^PainterData) {
   sync.unlock(&data_lock)
 }
 
-painter_clear_pixel_map :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData) {
+painter_clear_pixel_map :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData, clear_color: rl.Color) {
   sync.lock(&data_lock)
   defer sync.unlock(&data_lock)
 
@@ -172,7 +239,7 @@ painter_clear_pixel_map :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData) 
   pixels := cast([^]px.Pixel)rl.rlReadTexturePixels(pixel_map.texture.id, painter.width, painter.height, format)
   len := cast(int)(painter.width * painter.height)
   for i in 0..<len {
-    pixels[i] = { 255, 255, 255, 255 }
+    pixels[i] = { clear_color.r, clear_color.g, clear_color.b, clear_color.a }
   }
   px.pixel_map_update_rect(pixel_map, 0, 0, cast(f32)painter.width, cast(f32)painter.height, pixels[:len])
   for pos in painter.canvas {

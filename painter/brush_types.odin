@@ -24,7 +24,10 @@ circle_brush :: proc(data: ^PainterData, x_pos, y_pos: i32) {
       pos := [2]i32 { rx, y }
 
       if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
-        if data.canvas[pos] == false do append(&data.updated, pos)
+        if data.canvas[pos] == false {
+          append(&data.updated_buf, pos)
+          append(&data.updated, pos)
+        }
         data.canvas[pos] = true
       }
     } 
@@ -40,7 +43,10 @@ pixel_brush :: proc(data: ^PainterData, x_pos, y_pos: i32) {
   if data.radius == 1.0 {
     pos := [2] i32 { x_pos, y_pos }
     if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
-      if data.canvas[pos] == false do append(&data.updated, pos)
+      if data.canvas[pos] == false {
+        append(&data.updated_buf, pos)
+        append(&data.updated, pos)
+      }
       data.canvas[pos] = true
     }
     return
@@ -50,7 +56,10 @@ pixel_brush :: proc(data: ^PainterData, x_pos, y_pos: i32) {
     for y := y_start; y < y_end; y += 1 {
       pos := [2] i32 { x, y }
       if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
-        if data.canvas[pos] == false do append(&data.updated, pos)
+        if data.canvas[pos] == false {
+          append(&data.updated_buf, pos)
+          append(&data.updated, pos)
+        }         
         data.canvas[pos] = true
       }
     }
@@ -77,7 +86,10 @@ calligraphy :: proc(data: ^PainterData, x_pos, y_pos: i32) {
     for y := y_start; y < y_end; y += 1 {
       pos := [2] i32 { x, y }
       if pos.x > 0 && pos.x < data.width - 1 && pos.y > 0 && pos.y < data.height - 1 {
-        if data.canvas[pos] == false do append(&data.updated, pos)
+        if data.canvas[pos] == false {
+          append(&data.updated_buf, pos)
+          append(&data.updated, pos)
+        }         
         data.canvas[pos] = true
       }
     }
