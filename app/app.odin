@@ -14,7 +14,7 @@ AppData :: struct {
   pixel_map: px.PixelMap,
   canvas: painter.Canvas,
   data: painter.PainterData,
-  music_queue: music.Queue 
+  music_queue: music.Queue
 }
 
 AppControls :: struct {
@@ -33,7 +33,7 @@ AppControls :: struct {
 app_init :: proc(target_fps: i32) {
   config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE, rl.ConfigFlag.BORDERLESS_WINDOWED_MODE }
   rl.SetConfigFlags(config_flags)
-  //rl.SetTraceLogLevel(rl.TraceLogLevel.FATAL)
+  rl.SetTraceLogLevel(rl.TraceLogLevel.FATAL)
   rl.InitWindow(600, 480, "Sqr")
   
   rl.SetTargetFPS(target_fps)
@@ -142,7 +142,7 @@ app_control_init :: proc() -> AppControls {
   current_brush : painter.BrushType = painter.BrushType.Circle
   current_color : rl.Color = rl.BLACK
   color : rl.Color = current_color
-  eraser_color := []px.Pixel { px.Pixel { 255, 255, 255, 255 } }
+  eraser_color := []px.Pixel { px.Pixel { 0, 0, 0, 0 } }
   prev_eraser_on := false
   eraser_on := false
 
@@ -165,10 +165,12 @@ app_update_basic_controls :: proc(app: ^AppData, controls: ^AppControls) {
 
   if music.queue_is_playing(&app.music_queue) do music.queue_update(&app.music_queue)
 
-  if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
-    painter.painter_clear_pixel_map(&app.pixel_map, &app.data) 
-  }
+  if !controls.controls_on do painter.painter_undo_redo(&app.data, &app.pixel_map)
 
+  if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
+    painter.painter_clear_pixel_map(&app.pixel_map, &app.data, rl.Color { 0, 0, 0, 0 })
+  }
+ 
   if (rl.IsKeyPressed(rl.KeyboardKey.TAB)) {
     controls.controls_on = !controls.controls_on
     painter.painter_lock_canvas(controls.controls_on)
@@ -298,8 +300,8 @@ app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
 
     if controls.eraser_on != controls.prev_eraser_on {
       controls.prev_eraser_on = controls.eraser_on
-      color := controls.eraser_on ? rl.WHITE : controls.current_color
-      app.data.color = { color.r, color.g, color.b, 255 }
+      color := controls.eraser_on ? rl.Color { 0, 0, 0, 0 } : controls.current_color
+      app.data.color = { color.r, color.g, color.b, color.a }
       
       painter.painter_reset_canvas_update(&app.data)
     } 
