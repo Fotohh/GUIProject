@@ -44,6 +44,10 @@ main :: proc() {
   rl.SetExitKey(rl.KeyboardKey.KEY_NULL)
 
   app_controls := app.app_control_init()
+
+  icon := rl.LoadImage("icon.png")
+  defer rl.UnloadImage(icon)
+  rl.SetWindowIcon(icon)
  
   for !rl.WindowShouldClose() { 
 

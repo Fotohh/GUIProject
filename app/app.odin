@@ -234,24 +234,23 @@ app_draw_canvas :: proc(app: ^AppData) {
 
 app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
   screen_center_w, screen_center_h := app_get_screen_center()
-  rl.DrawFPS(0, 0)
 
   rl.DrawRectangle(30, 50, 800, 200, rl.BLUE)
   rl.DrawText("Color:", 40, 80, 32, rl.BLACK)
   rl.DrawCircle(190, 95, 20, controls.current_color)
   rl.DrawText(rl.TextFormat("Map: %dx%d px", app.pixel_map.width, app.pixel_map.height), 230, 80, 32, rl.BLACK)
   rl.DrawText(rl.TextFormat("Brush Size: %.1f", app.data.radius), 40, 120, 32, rl.BLACK)
-  rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom", 40, 160, 32, rl.BLACK)
-  rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan", 35, 205, 32, rl.BLACK)
+  rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom -- U: Undo", 40, 160, 28, rl.BLACK)
+  rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan -- R: Redo", 35, 205, 28, rl.BLACK)
     
   switch controls.current_brush {
-    case .Circle: rl.DrawText("Circle Brush", 510, 70, 24, rl.WHITE)
-    case .Box: rl.DrawText("Box Brush", 510, 70, 24, rl.WHITE)
-    case .Calligraphy: rl.DrawText("Calligraphy Brush", 510, 70, 24, rl.WHITE)
+    case .Circle: rl.DrawText("Circle Brush", 550, 70, 24, rl.WHITE)
+    case .Box: rl.DrawText("Box Brush", 550, 70, 24, rl.WHITE)
+    case .Calligraphy: rl.DrawText("Calligraphy Brush", 550, 70, 24, rl.WHITE)
   }
 
   text : cstring = controls.eraser_on ? "Eraser On" : "Eraser Off"
-  rl.DrawText(text, 510, 100, 24, rl.WHITE)
+  rl.DrawText(text, 550, 100, 24, rl.WHITE)
     
   if controls.controls_on {
     wf := cast(f32)screen_center_w
