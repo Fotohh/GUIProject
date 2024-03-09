@@ -104,6 +104,8 @@ mouse_to_pixels :: proc(world_x, world_y, map_w, map_h: f32) -> (f32, f32) {
   return math.abs(-world_x - (map_w / 2)), math.abs(-world_y - (map_h / 2))
 }
 
+import "core:fmt"
+
 mouse_on_grid :: proc(
   data: ^PainterData
 ) {
