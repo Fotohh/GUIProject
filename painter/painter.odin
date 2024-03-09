@@ -164,7 +164,7 @@ painter_undo_redo :: proc(data: ^PainterData, pixel_map: ^px.PixelMap) {
 
 
   if rl.IsKeyPressed(rl.KeyboardKey.U) && len(data.undo_buffer) > 0 {
-    painter_clear_pixel_map(pixel_map, data, rl.WHITE)
+    painter_reset_to_original(pixel_map, data)
     prev_color := data.color
     append(&data.redo_buffer, pop(&data.undo_buffer))
     for i in 0..<len(data.undo_buffer) {
@@ -244,6 +244,19 @@ painter_clear_pixel_map :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData, 
     pixels[i] = { clear_color.r, clear_color.g, clear_color.b, clear_color.a }
   }
   px.pixel_map_update_rect(pixel_map, 0, 0, cast(f32)painter.width, cast(f32)painter.height, pixels[:len])
+  for pos in painter.canvas {
+    painter.canvas[pos] = false 
+  }
+}
+
+painter_reset_to_original :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData) {
+  sync.lock(&data_lock)
+  defer sync.unlock(&data_lock)
+
+  len := cast(int)(painter.width * painter.height)
+
+  px.pixel_map_update_rect(pixel_map, 0, 0, cast(f32)painter.width, cast(f32)painter.height, pixel_map.original[:len])
+
   for pos in painter.canvas {
     painter.canvas[pos] = false 
   }
