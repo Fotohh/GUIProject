@@ -4,10 +4,10 @@ import tracy "odin-tracy"
 import rl "vendor:raylib"
 
 import "core:fmt"
-
 import cmd "cmd-line"
 import "app"
 import "painter"
+import serialize "serialization"
 
 main :: proc() {  
   tracy.SetThreadName("Main")
@@ -19,7 +19,7 @@ main :: proc() {
 		secure            = true,
 	)
 
-  px_map_size_x, px_map_size_y, cmd_read_success := cmd.cmd_read_args()
+  px_map_size_x, px_map_size_y, cmd_read_success, file_path := cmd.cmd_read_args()
   if !cmd_read_success {
     return
   }
@@ -31,6 +31,8 @@ main :: proc() {
     fmt.println("Failed to create app...")
     return
   }
+
+  app_data.file_name = file_path
   
   defer app.app_destroy(&app_data)
  
@@ -39,6 +41,7 @@ main :: proc() {
   app_controls := app.app_control_init()
  
   for !rl.WindowShouldClose() { 
+
     defer tracy.FrameMark("MainLoop") 
 
     tracy.Zone()  
@@ -55,5 +58,6 @@ main :: proc() {
     app.app_draw_gui(&app_data, &app_controls)
 
     painter.painter_update_pixel_map(&app_data.pixel_map, &app_data.data)
+
   }
 }
