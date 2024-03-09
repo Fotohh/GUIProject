@@ -4,17 +4,20 @@ import rl "vendor:raylib"
 
 import "core:math"
 import "core:strings"
+import "core:fmt"
 
 import px "../pixel"
 import "../painter"
 import "../music"
+import export "../serialization"
 
 AppData :: struct {
   camera: rl.Camera2D,
   pixel_map: px.PixelMap,
   canvas: painter.Canvas,
   data: painter.PainterData,
-  music_queue: music.Queue 
+  music_queue: music.Queue,
+  file_name: cstring
 }
 
 AppControls :: struct {
@@ -223,6 +226,17 @@ app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
       "Music Player", 
     ) {
       controls.music_player_toggled = !controls.music_player_toggled
+    }
+        
+    if rl.GuiLabelButton(
+      rl.Rectangle{wf - 40, hf - 100, 200,10},
+      "Export image",
+    ){
+      if export.load_texture(app.pixel_map.texture, app.file_name){
+          fmt.println("Succesfully exported file!")
+      } else {
+            fmt.println("Failed to export file!")
+          }
     }
 
     if controls.music_player_toggled {
