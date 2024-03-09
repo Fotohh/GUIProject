@@ -19,7 +19,12 @@ main :: proc() {
 		secure            = true,
 	)
 
-  px_map_size_x, px_map_size_y, cmd_read_success, file_path := cmd.cmd_read_args()
+  px_map_size_x, px_map_size_y, file_path, load_file_path, cmd_read_success := cmd.cmd_read_args()
+
+  if !rl.FileExists(load_file_path) && len(load_file_path) > 0 {
+    fmt.println("Cannot open file!")
+    return
+  }
   if !cmd_read_success {
     return
   }
@@ -27,7 +32,7 @@ main :: proc() {
   app.app_init(120)
 
   app_data: app.AppData 
-  if !app.app_create(&app_data, px_map_size_x, px_map_size_y) {
+  if !app.app_create(&app_data, px_map_size_x, px_map_size_y, load_file_path) {
     fmt.println("Failed to create app...")
     return
   }
