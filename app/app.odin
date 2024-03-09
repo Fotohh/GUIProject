@@ -190,9 +190,15 @@ app_draw_canvas :: proc(app: ^AppData) {
     0 - center_y, 
     rl.WHITE,
   ) 
-    
-  rl.DrawRectangleLines(0 - center_x, 0 - center_y, app.pixel_map.width, app.pixel_map.height, rl.BLACK)
 
+  rl.DrawRectangleLines(
+    0 - center_x - 1,
+    0 - center_y - 1,
+    app.pixel_map.width + 1,
+    app.pixel_map.height + 1,
+    rl.WHITE,
+  )
+    
   rl.EndMode2D()
 }
 
