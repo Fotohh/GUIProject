@@ -1,1 +1,1 @@
-odin build . -out:sqr.exe -o:"aggressive"
+odin build . -out:sqr.exe -o:"aggressive" -resource:"icon.rc"
