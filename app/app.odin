@@ -209,6 +209,16 @@ app_update_basic_controls :: proc(app: ^AppData, controls: ^AppControls) {
 
     painter.painter_clear_pixel_map(&app.pixel_map, &app.data, rl.Color { 0, 0, 0, 0 })
   }
+
+  if rl.IsKeyPressed(rl.KeyboardKey.I) && !controls.eraser_on {
+    color := painter.painter_get_pixel_color(&app.pixel_map, &app.data)
+    if color.a != 0 {
+      controls.current_color = { color.r, color.g, color.b, color.a }
+      controls.gui_color = { color.r, color.g, color.b, color.a }
+      app.data.color = color 
+      painter.painter_reset_canvas_update(&app.data)
+    }
+  }
  
   if (rl.IsKeyPressed(rl.KeyboardKey.TAB)) {
     controls.controls_on = !controls.controls_on
@@ -241,13 +251,14 @@ app_draw_canvas :: proc(app: ^AppData) {
 app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
   screen_center_w, screen_center_h := app_get_screen_center()
 
-  rl.DrawRectangle(30, 50, 800, 200, rl.BLUE)
+  rl.DrawRectangle(30, 50, 800, 210, rl.BLUE)
   rl.DrawText("Color:", 40, 80, 32, rl.BLACK)
   rl.DrawCircle(190, 95, 20, controls.current_color)
   rl.DrawText(rl.TextFormat("Map: %dx%d px", app.pixel_map.width, app.pixel_map.height), 230, 80, 32, rl.BLACK)
   rl.DrawText(rl.TextFormat("Brush Size: %.1f", app.data.radius), 40, 120, 32, rl.BLACK)
   rl.DrawText("C: Clear -- Mouse Wheel Scroll: Zoom -- U: Undo", 40, 160, 28, rl.BLACK)
-  rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan -- R: Redo", 35, 205, 28, rl.BLACK)
+  rl.DrawText("Tab: Open Panel -- Mouse Wheel Down: Pan -- R: Redo", 35, 190, 28, rl.BLACK)
+  rl.DrawText("I - Eyedropper Tool", 35, 225, 28, rl.BLACK)
     
   switch controls.current_brush {
     case .Circle: rl.DrawText("Circle Brush", 550, 70, 24, rl.WHITE)
