@@ -174,6 +174,8 @@ painter_undo_redo :: proc(data: ^PainterData, pixel_map: ^px.PixelMap) {
         data.color = action.color
         painter_update_pixel_map(pixel_map, data)  
         painter_reset_canvas_update(data)
+      } else if action.operation == .Clear {
+        painter_clear_pixel_map(pixel_map, data, { action.color.r, action.color.g, action.color.b, action.color.a })
       }
     } 
 
@@ -190,7 +192,9 @@ painter_undo_redo :: proc(data: ^PainterData, pixel_map: ^px.PixelMap) {
       data.color = action.color
       painter_update_pixel_map(pixel_map, data)  
       painter_reset_canvas_update(data)
-    } 
+    } else if action.operation == .Clear {
+      painter_clear_pixel_map(pixel_map, data, { action.color.r, action.color.g, action.color.b, action.color.a })
+    }
 
     append(&data.undo_buffer, action)
 
@@ -236,14 +240,13 @@ painter_reset_canvas_update :: proc(painter: ^PainterData) {
 painter_clear_pixel_map :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData, clear_color: rl.Color) {
   sync.lock(&data_lock)
   defer sync.unlock(&data_lock)
-
-  format := cast(i32)rl.PixelFormat.UNCOMPRESSED_R8G8B8A8
-  pixels := cast([^]px.Pixel)rl.rlReadTexturePixels(pixel_map.texture.id, painter.width, painter.height, format)
-  len := cast(int)(painter.width * painter.height)
-  for i in 0..<len {
+ 
+  pixels: []px.Pixel = slice.clone(pixel_map.original[:painter.width*painter.height])
+  for i in 0..<painter.width*painter.height {
     pixels[i] = { clear_color.r, clear_color.g, clear_color.b, clear_color.a }
   }
-  px.pixel_map_update_rect(pixel_map, 0, 0, cast(f32)painter.width, cast(f32)painter.height, pixels[:len])
+ 
+  px.pixel_map_update_rect(pixel_map, 0, 0, cast(f32)painter.width, cast(f32)painter.height, pixels[:])
   for pos in painter.canvas {
     painter.canvas[pos] = false 
   }

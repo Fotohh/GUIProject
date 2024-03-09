@@ -201,6 +201,12 @@ app_update_basic_controls :: proc(app: ^AppData, controls: ^AppControls) {
   if !controls.controls_on do painter.painter_undo_redo(&app.data, &app.pixel_map)
 
   if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
+    action: painter.Action
+    action.operation = .Clear
+    action.color = { 0, 0, 0, 0 }
+    append(&app.data.undo_buffer, action)
+    clear(&app.data.redo_buffer)
+
     painter.painter_clear_pixel_map(&app.pixel_map, &app.data, rl.Color { 0, 0, 0, 0 })
   }
  
