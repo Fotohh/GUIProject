@@ -5,10 +5,31 @@ import "core:fmt"
 import "core:strings"
 
 Queue :: struct{
-  pos : u32, //1 more than current_music
   current_music : u32,
+  music_list: string,
   music : [dynamic]rl.Music,
   volume : f32
+}
+
+@(private)
+retrieve_filename :: proc(filepath: cstring) -> string {
+  @(static)
+  unknown_file_counter := 0
+  
+  filename: string
+
+  count: i32 = 0
+  split := rl.TextSplit(filepath, '\\', &count)
+  if count == 0 do split = rl.TextSplit(filepath, '/', &count)
+
+  if count == 0 {
+    filename = fmt.aprint("unnamed_music_file", unknown_file_counter)
+    unknown_file_counter += 1
+  } else {
+    filename = strings.clone_from_cstring(split[count - 1])
+  }
+
+  return filename
 }
 
 wait_for_dropped_files :: proc(q: ^Queue) {
@@ -23,6 +44,12 @@ wait_for_dropped_files :: proc(q: ^Queue) {
       is_mp3 := rl.IsFileExtension(path, ".mp3")
       is_ogg := rl.IsFileExtension(path, ".ogg")
       if is_wav || is_mp3 || is_ogg {
+        new_filename := retrieve_filename(path)
+        if len(q.music_list) > 0 {
+          q.music_list = fmt.aprintf("%s;%s", q.music_list, new_filename)
+        } else {
+          q.music_list = new_filename
+        }
         queue_load_music(path, q)
       }
     }
@@ -37,38 +64,30 @@ queue_load_music :: proc(file_path: cstring, q: ^Queue) {
 
 set_song_loop :: proc(q: ^Queue) {
   song : ^rl.Music = &q.music[q.current_music]
-  if song.looping {
-    song.looping = false
-  } else {
-    song.looping = true
-  } 
+  song.looping = !song.looping 
 }
 
 set_volume :: proc(q: ^Queue, volume : f32) {
-  song : ^rl.Music = &q.music[q.current_music]
-  rl.SetMusicVolume(song^, volume)
-}
-
-queue_play_next :: proc(q: ^Queue) {
-  queue_count := cast(u32)len(q.music)
-
-  if queue_count > 0 && q.pos < queue_count {
-    queue_play(q, q.pos)
-    q.pos += 1
+  if cast(int)q.current_music < len(q.music) {
+    song : ^rl.Music = &q.music[q.current_music]
+    rl.SetMusicVolume(song^, volume)
   }
 }
   
 queue_skip :: proc(q: ^Queue) {
   queue_count := cast(u32)len(q.music)
 
-  if queue_count > 1 && q.pos < queue_count {
-    queue_play(q, q.pos)
-    q.pos += 1
+  if queue_count > 1 && q.current_music < queue_count - 1 {
+    q.current_music += 1
+    queue_play(q, q.current_music)
+  } else {
+    q.current_music = 0
   }
 }
 
 queue_play :: proc(q: ^Queue, pos: u32) {
   q.current_music = pos
+  rl.StopMusicStream(q.music[q.current_music])
   rl.PlayMusicStream(q.music[q.current_music])
 }
 
@@ -99,7 +118,9 @@ queue_clear :: proc(q: ^Queue) {
     rl.UnloadMusicStream(music)
   }
 
+  delete(q.music_list)
+
   if len(q.music) > 0 do clear(&q.music)
-  q.pos = 0
+
   q.current_music = 0
 }

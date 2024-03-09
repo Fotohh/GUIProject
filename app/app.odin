@@ -3,15 +3,18 @@ package app
 import rl "vendor:raylib"
 
 import "core:math"
+import "core:strings"
 
 import px "../pixel"
 import "../painter"
+import "../music"
 
 AppData :: struct {
   camera: rl.Camera2D,
   pixel_map: px.PixelMap,
   canvas: painter.Canvas,
-  data: painter.PainterData
+  data: painter.PainterData,
+  music_queue: music.Queue 
 }
 
 AppControls :: struct {
@@ -22,12 +25,15 @@ AppControls :: struct {
   eraser_color: []px.Pixel,
   prev_eraser_on: bool,
   eraser_on: bool,
+  music_player_toggled: bool,
+  scroll_index: i32,
+  selected_item: i32
 }
 
 app_init :: proc(target_fps: i32) {
   config_flags : rl.ConfigFlags = { rl.ConfigFlag.WINDOW_RESIZABLE, rl.ConfigFlag.BORDERLESS_WINDOWED_MODE }
   rl.SetConfigFlags(config_flags)
-  rl.SetTraceLogLevel(rl.TraceLogLevel.FATAL)
+  //rl.SetTraceLogLevel(rl.TraceLogLevel.FATAL)
   rl.InitWindow(600, 480, "Sqr")
   
   rl.SetTargetFPS(target_fps)
@@ -88,12 +94,20 @@ app_create :: proc(app: ^AppData, px_map_size_x: i32, px_map_size_y: i32) -> boo
   reserve(&app.data.updated, len(app.canvas))  
 
   painter.painter_worker_create(&app.data)
-   
+
+  rl.InitAudioDevice()
+
+  app.music_queue.volume = 20 //20%
+ 
   return true
 }
 
 app_destroy :: proc(app: ^AppData) {
+  rl.CloseAudioDevice()
   rl.CloseWindow()
+
+  music.queue_clear(&app.music_queue)
+
   px.pixel_map_destroy(&app.pixel_map) 
   delete_map(app.canvas)
   delete_dynamic_array(app.data.updated)
@@ -140,10 +154,17 @@ app_control_init :: proc() -> AppControls {
     eraser_color, 
     prev_eraser_on, 
     eraser_on,
+    false,
+    0,
+    0,
   }
 }
 
 app_update_basic_controls :: proc(app: ^AppData, controls: ^AppControls) {
+  music.wait_for_dropped_files(&app.music_queue)
+
+  if music.queue_is_playing(&app.music_queue) do music.queue_update(&app.music_queue)
+
   if (rl.IsKeyPressed(rl.KeyboardKey.C)) {
     painter.painter_clear_pixel_map(&app.pixel_map, &app.data) 
   }
@@ -193,8 +214,43 @@ app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
     
   if controls.controls_on {
     wf := cast(f32)screen_center_w
-    hf := cast(f32)screen_center_h
+    hf := cast(f32)screen_center_h 
+
     rl.DrawRectangle(cast(i32)wf - 400, cast(i32)hf - 400, 800, 800, rl.Color { 0, 0, 46, 255 })
+
+    if rl.GuiButton(
+      rl.Rectangle{ wf - 80, hf - 300, 200, 100},
+      "Music Player", 
+    ) {
+      controls.music_player_toggled = !controls.music_player_toggled
+    }
+
+    if controls.music_player_toggled {
+      if len(app.music_queue.music) > 0 {
+        music.loop_button(&app.music_queue, wf - 380, hf - 300)
+        music.pause_button(&app.music_queue, wf - 380, hf + 100)
+        music.music_time_slider(&app.music_queue, wf - 200, hf)
+        music.volume_slider(&app.music_queue, wf - 200, hf - 100)
+        music.skip_button(&app.music_queue, wf - 380, hf - 200, &controls.selected_item)
+        music.set_volume(&app.music_queue, app.music_queue.volume / 100)
+
+        rl.GuiListView(
+          rl.Rectangle { wf - 400, hf + 200, 800, 200 }, 
+          strings.unsafe_string_to_cstring(app.music_queue.music_list),
+          &controls.scroll_index, 
+          &controls.selected_item,
+        )
+
+        if rl.GuiButton(rl.Rectangle { wf + 200, hf - 300, 100, 50 }, "Play") {
+          if controls.selected_item >= 0 {
+            selected_item := cast(u32)controls.selected_item
+            music.queue_play(&app.music_queue, selected_item)
+          } 
+        }
+        return
+      }
+    }
+
     rl.GuiColorPicker(rl.Rectangle { wf - 380, hf - 300, 200.0, 200.0 }, "Colors", &controls.gui_color)
 
     rl.GuiSetStyle(cast(i32)rl.GuiControl.DEFAULT, cast(i32)rl.GuiDefaultProperty.TEXT_SIZE, 32)
