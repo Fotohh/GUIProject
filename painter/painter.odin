@@ -1,6 +1,7 @@
 package painter
 
 import tracy "../odin-tracy"
+
 import rl "vendor:raylib"
 import lin "core:math/linalg"
 
@@ -55,7 +56,7 @@ PainterData :: struct {
 
  
 bresenham_line :: proc(data: ^PainterData, x1, y1: i32) { 
-  tracy.ZoneNS("bresenham_line")   
+  when ODIN_DEBUG do tracy.ZoneNS("bresenham_line")   
 
   for data_wait do sync.cond_wait(&data_cond, &data_lock)
 
@@ -109,7 +110,7 @@ import "core:fmt"
 mouse_on_grid :: proc(
   data: ^PainterData
 ) {
-  tracy.ZoneN("mouse_on_grid")
+  when ODIN_DEBUG do tracy.ZoneN("mouse_on_grid")
 
   sync.lock(&data_lock)
 
@@ -285,7 +286,7 @@ painter_reset_to_original :: proc(pixel_map: ^px.PixelMap, painter: ^PainterData
 }
 
 painter_worker :: proc(worker: ^thread.Thread) {
-  tracy.SetThreadName("other_thread")
+  when ODIN_DEBUG do tracy.SetThreadName("other_thread")
 
   for {
     data := cast(^PainterData)worker.data

@@ -10,14 +10,16 @@ import "painter"
 import serialize "serialization"
 
 main :: proc() {  
-  tracy.SetThreadName("Main")
+  when ODIN_DEBUG {
+    tracy.SetThreadName("Main")
 
-  context.allocator = tracy.MakeProfiledAllocator(
-		self              = &tracy.ProfiledAllocatorData{},
-		callstack_size    = 5,
-		backing_allocator = context.allocator,
-		secure            = true,
-	)
+    context.allocator = tracy.MakeProfiledAllocator(
+		  self              = &tracy.ProfiledAllocatorData{},
+		  callstack_size    = 5,
+		  backing_allocator = context.allocator,
+		  secure            = true,
+	  )
+  }
 
   px_map_size_x, px_map_size_y, file_path, load_file_path, cmd_read_success := cmd.cmd_read_args()
 
@@ -51,9 +53,9 @@ main :: proc() {
  
   for !rl.WindowShouldClose() { 
 
-    defer tracy.FrameMark("MainLoop") 
+    defer when ODIN_DEBUG do tracy.FrameMark("MainLoop") 
 
-    tracy.Zone()  
+    when ODIN_DEBUG do tracy.Zone()
     
     app.app_update_basic_controls(&app_data, &app_controls)
     app.app_update_camera(&app_data)

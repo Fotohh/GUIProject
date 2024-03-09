@@ -47,11 +47,9 @@ app_init :: proc(target_fps: i32) {
   h := rl.GetMonitorHeight(current_monitor)
 
   rl.SetWindowPosition(
-    cast(i32)rl.GetMonitorWidth(current_monitor) / 2 - (1600 / 2), 
-    cast(i32)rl.GetMonitorHeight(current_monitor) / 2 - (1480 / 2),
+    w / 2 - 300,
+    h / 2 - 240,
   )
-
-  rl.SetWindowSize(w / 2, h / 2)
 }
 
 app_get_screen_center :: proc() -> (i32, i32) {

@@ -11,7 +11,7 @@ BrushType :: enum {
 }
 
 circle_brush :: proc(data: ^PainterData, x_pos, y_pos: i32) {
-  tracy.ZoneN("bresenham_circle")
+  when ODIN_DEBUG do tracy.ZoneN("bresenham_circle")
 
   radius := data.radius
 

@@ -1,1 +1,1 @@
-odin build . -out:sqr.exe
+odin build . -out:sqr.exe -debug
