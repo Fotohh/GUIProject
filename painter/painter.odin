@@ -204,6 +204,25 @@ painter_undo_redo :: proc(data: ^PainterData, pixel_map: ^px.PixelMap) {
 
 }
 
+painter_get_pixel_color :: proc(pixel_map: ^px.PixelMap, data: ^PainterData) -> px.Pixel {
+  sync.lock(&data_lock)
+  defer sync.unlock(&data_lock)
+
+  world := rl.GetScreenToWorld2D(rl.GetMousePosition(), data.camera)
+  x, y := mouse_to_pixels(world.x, world.y, cast(f32)data.width, cast(f32)data.height)
+  in_grid := rl.CheckCollisionPointRec(world, { -data.cxf, -data.cyf, cast(f32)data.width, cast(f32)data.height })
+
+  if in_grid {
+    format := rl.PixelFormat.UNCOMPRESSED_R8G8B8A8
+    pixels := 
+      cast([^]px.Pixel)rl.rlReadTexturePixels(pixel_map.texture.id, pixel_map.texture.width, pixel_map.texture.height, cast(i32)format)
+    pixel := pixels[cast(i32)x + cast(i32)y * cast(i32)data.width]
+    return pixel
+  }
+
+  return data.color
+}
+
 painter_update_pixel_map :: proc(pixel_map: ^px.PixelMap, data: ^PainterData) {
   if len(data.updated) > 0 {
     data_wait = true
