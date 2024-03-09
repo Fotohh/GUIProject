@@ -61,8 +61,11 @@ app_get_screen_center :: proc() -> (i32, i32) {
   return screen_center_w, screen_center_h 
 }
 
-app_create :: proc(app: ^AppData, px_map_size_x: i32, px_map_size_y: i32) -> bool {
+app_create :: proc(app: ^AppData, px_map_size_x: i32, px_map_size_y: i32, filename: cstring) -> bool {
   screen_center_w, screen_center_h := app_get_screen_center()
+
+  app.pixel_map.width = px_map_size_x
+  app.pixel_map.height = px_map_size_y
 
   app.camera = rl.Camera2D {
     zoom = 2.0,
@@ -72,21 +75,48 @@ app_create :: proc(app: ^AppData, px_map_size_x: i32, px_map_size_y: i32) -> boo
   }
 
   ok: bool = false
-  app.pixel_map, ok = px.pixel_map_create(px_map_size_x, px_map_size_y)
+  if len(filename) == 0 {
+    app.pixel_map, ok = px.pixel_map_create(px_map_size_x, px_map_size_y)
+  } else {
+    app.pixel_map.texture = rl.LoadTexture(filename)
+    
+    app.pixel_map.width = app.pixel_map.texture.width
+    app.pixel_map.height = app.pixel_map.texture.height
+
+    fmt.println(app.pixel_map.width, app.pixel_map.height)
+    if app.pixel_map.texture.width == 0 && app.pixel_map.texture.height == 0 {
+      fmt.println("Unable to load image!")
+      ok = false
+    }
+    if app.pixel_map.texture.width > 1024 && app.pixel_map.texture.height > 1024 {
+      fmt.println("Image is too large! Max size is 1024x1024!")
+      ok = false
+    }
+    if app.pixel_map.texture.width < 16 && app.pixel_map.texture.height < 16 {
+      fmt.println("Image is too small! Minimum size is 16x16!")
+      ok = false
+    }
+
+    format := cast(i32)rl.PixelFormat.UNCOMPRESSED_R8G8B8A8
+    app.pixel_map.original = 
+      cast([^]px.Pixel)rl.rlReadTexturePixels(app.pixel_map.texture.id, app.pixel_map.width, app.pixel_map.height, format)
+
+    ok = true
+  }
   if !ok do return false
   
   center_x := px_map_size_x / 2.0
   center_y := px_map_size_y / 2.0
 
   app.canvas = painter.Canvas {}
-  app.canvas = make_map(map[[2]i32]bool, px_map_size_x * px_map_size_y)
+  app.canvas = make_map(map[[2]i32]bool, app.pixel_map.width * app.pixel_map.height)
 
   app.data = painter.PainterData {}
 
-  app.data.width = px_map_size_x
-  app.data.height = px_map_size_y
-  app.data.cxf = cast(f32)px_map_size_x / 2.0
-  app.data.cyf = cast(f32)px_map_size_y / 2.0
+  app.data.width = app.pixel_map.width
+  app.data.height = app.pixel_map.height
+  app.data.cxf = cast(f32)app.pixel_map.width / 2.0
+  app.data.cyf = cast(f32)app.pixel_map.height / 2.0
   app.data.x0 = 0
   app.data.y0 = 0
   app.data.camera = app.camera
@@ -236,17 +266,6 @@ app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
       controls.music_player_toggled = !controls.music_player_toggled
     }
         
-    if rl.GuiLabelButton(
-      rl.Rectangle{wf - 40, hf - 100, 200,10},
-      "Export image",
-    ){
-      if export.load_texture(app.pixel_map.texture, app.file_name){
-          fmt.println("Succesfully exported file!")
-      } else {
-            fmt.println("Failed to export file!")
-          }
-    }
-
     if controls.music_player_toggled {
       if len(app.music_queue.music) > 0 {
         music.loop_button(&app.music_queue, wf - 380, hf - 300)
@@ -270,6 +289,14 @@ app_draw_gui :: proc(app: ^AppData, controls: ^AppControls) {
           } 
         }
         return
+      }
+    }
+
+    if rl.GuiLabelButton(rl.Rectangle{wf - 40, hf - 100, 200,10}, "Export image") {
+      if export.export_texture(app.pixel_map.texture, app.file_name) {
+        fmt.println("Succesfully exported file!")
+      } else {
+        fmt.println("Failed to export file!")
       }
     }
 
